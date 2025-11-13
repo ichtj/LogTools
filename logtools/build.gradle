@@ -1,0 +1,72 @@
+plugins {
+    alias(libs.plugins.android.library)
+    id "com.vanniktech.maven.publish" version "0.34.0"
+    id 'signing'
+}
+
+android {
+    namespace 'com.library.logtools'
+    compileSdk {
+        version = release(36)
+    }
+
+    defaultConfig {
+        minSdk 19
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}
+
+dependencies {
+    implementation libs.appcompat
+    implementation libs.material
+    testImplementation libs.junit
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.espresso.core
+}
+mavenPublishing {
+    coordinates("命名空间<填写sonatype中的>", "库的名称", "库的版本")
+
+    pom {
+        name = ' 你的Android 库名称'
+        description = '你的 Android 库描述'
+        url = 'https://github.com/用户名/仓库名'
+
+        // 开源协议配置，可根据需要修改
+        licenses {
+            license {
+                name = 'The Apache License, Version 2.0'
+                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            }
+        }
+
+        developers {
+            developer {
+                id = '你的id (可以和name一样 但要小写)'
+                name = '你的 Name'
+                email = '你的电子邮箱'
+            }
+        }
+
+        scm {
+            connection = 'scm:git:github.com/用户名/仓库名.git'
+            developerConnection = 'scm:git:ssh://github.com/用户名/仓库名.git'
+            url = 'https://github.com/用户名/仓库名'
+        }
+    }
+
+    publishToMavenCentral()
+    signAllPublications()
+}

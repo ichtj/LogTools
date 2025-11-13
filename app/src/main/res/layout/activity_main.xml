@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <Button
+        android:id="@+id/btnSetLogDirectory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="设置日志目录" />
+
+    <Button
+        android:id="@+id/btnWriteLog"
+        android:layout_width="match_parent"
+        android:onClick="writeOnClick"
+        android:layout_height="wrap_content"
+        android:text="写入日志" />
+
+    <Button
+        android:id="@+id/btnShowLogFiles"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="getLogFilesOnClick"
+        android:text="显示日志文件列表" />
+</LinearLayout>
