@@ -1,5 +1,6 @@
 package com.face.logtools;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -22,11 +23,11 @@ public class MainActivity extends AppCompatActivity {
         Button btnSetLogDirectory = findViewById(R.id.btnSetLogDirectory);
 
         btnSetLogDirectory.setOnClickListener(v -> {
-            FilePickerDialog filePickerDialog=new FilePickerDialog(this, "选择日志目录", "/sdcard/");
+            FilePickerDialog filePickerDialog=new FilePickerDialog(this, "选择日志目录", FaceLogTools.getLogDirectory ());
             filePickerDialog.setOnPathSelectedListener (new FilePickerDialog.OnPathSelectedListener ( ) {
                 @Override
                 public void onPathSelected(String path) {
-                    FaceLogTools.setLogDirectory(path);
+                    FaceLogTools.putLogDirectory (path);
                     Toast.makeText(MainActivity.this, "日志目录已设置 : "+path, Toast.LENGTH_SHORT).show();
                 }
 
@@ -37,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
             });
             filePickerDialog.show ();
         });
-
     }
     int count =0;
     boolean isRunning = false;

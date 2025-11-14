@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace 'com.library.logtools'
+    namespace ='com.library.logtools'
     compileSdk {
         version = release(36)
     }
@@ -24,8 +24,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
@@ -36,13 +36,15 @@ dependencies {
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
 }
+
+
 mavenPublishing {
-    coordinates("io.github.ichtj", "com.library.logtools", "1.0")
+    coordinates("io.github.ichtj", "LogTools", "1.0.4")
 
     pom {
         name = 'LogTools'
-        description = 'Log management tools'
-        url = 'https://github.com/ichtj/LogTools.git'
+        description = 'description'
+        url = 'https://github.com/ichtj/LogTools'
 
         // 开源协议配置，可根据需要修改
         licenses {
@@ -61,9 +63,9 @@ mavenPublishing {
         }
 
         scm {
-            connection = 'scm:git:github.com/ichtj/LogTools.git'
-            developerConnection = 'scm:git:ssh://github.com/ichtj/LogTools.git'
-            url = 'https://github.com/ichtj/LogTools.git'
+            connection = 'git@github.com:ichtj/LogTools.git'
+            developerConnection = 'git@github.com:ichtj/LogTools.git'
+            url = 'git@github.com:ichtj/LogTools.git'
         }
     }
 

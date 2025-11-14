@@ -2,6 +2,7 @@ package com.library.logtools;
 
 import android.content.Context;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.BufferedWriter;
@@ -17,8 +18,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class FaceLogTools {
+    private static final String TAG=FaceLogTools.class.getSimpleName();
     private static FaceLogTools instance;
-    private static final int MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    private static final long DEFAULT_MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     private static final String LOG_FILE_PREFIX = "log_";
     private static final String LOG_FILE_EXTENSION = ".txt";
     private static final SimpleDateFormat DATE_FLIENAME_FORMAT = new SimpleDateFormat("yyyyMMdd");
@@ -30,6 +32,9 @@ public class FaceLogTools {
     private static BufferedWriter writer;
     private static ExecutorService executorService;
     private static Context mContext;
+    private static final String KEY_LOG_DIR = "face_log_dir";
+    private static final String KEY_MAX_FILE_SIZE = "max_file_size";
+
 
     public static Context getmContext() {
         return mContext;
@@ -39,6 +44,7 @@ public class FaceLogTools {
         // 私有构造函数，防止实例化
     }
 
+
     public static void initialize(Context context, boolean showLog) {
         if (instance == null) {
             synchronized (FaceLogTools.class) {
@@ -47,7 +53,7 @@ public class FaceLogTools {
                     mContext = context;
                     isShowLog=showLog;
                     executorService = Executors.newSingleThreadExecutor();
-                    logDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM); // 默认目录为/sdcard/DCIM/
+                    putLogDirectory (getLogDirectory ());
                     if (logDirectory != null && !logDirectory.exists()) {
                         logDirectory.mkdirs();
                     }
@@ -58,16 +64,36 @@ public class FaceLogTools {
         }
     }
 
-    public static void setLogDirectory(String directoryPath) {
-        if (logDirectory == null) {
-            throw new IllegalStateException("FaceLogTools is not initialized. Call initialize() first.");
+    /**
+     * 设置最大文件大小 单位：字节
+     * @param size
+     */
+    public static void setMaxFileSize(long size){
+        // 这里可以添加逻辑来设置最大文件大小
+        SPUtils.putLong (KEY_MAX_FILE_SIZE,size);
+    }
+
+    /**
+     * 获取最大文件大小 单位：字节
+     */
+    public static long getMaxFileSize(){
+        // 这里可以添加逻辑来设置最大文件大小
+        return SPUtils.getLong (KEY_MAX_FILE_SIZE,DEFAULT_MAX_FILE_SIZE);
+    }
+
+    public static String getLogDirectory() {
+        return SPUtils.getString (KEY_LOG_DIR,Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath ());
+    }
+
+    public static void putLogDirectory(String directoryPath) {
+        if (!TextUtils.isEmpty (directoryPath)){
+            SPUtils.putString (KEY_LOG_DIR,directoryPath);
+            logDirectory= new File (directoryPath);
         }
-        logDirectory = directoryPath != null
-                ? new File(directoryPath)
-                : logDirectory;
         if (logDirectory != null && !logDirectory.exists()) {
             logDirectory.mkdirs();
         }
+        Log.d (TAG, "putLogDirectory: "+getLogDirectory ());
         FileCleanWorker.stop();
         FileCleanWorker.start(mContext, logDirectory, 1);
         resumeOrCreateLogFile();
@@ -84,7 +110,7 @@ public class FaceLogTools {
         if (existingFiles != null && existingFiles.length > 0) {
             Arrays.sort(existingFiles, (f1, f2) -> f1.getName().compareTo(f2.getName()));
             File lastFile = existingFiles[existingFiles.length - 1];
-            if (lastFile.length() < MAX_FILE_SIZE) {
+            if (lastFile.length() < getMaxFileSize ()) {
                 currentLogFile = lastFile;
                 fileIndex = getFileIndexFromName(lastFile.getName());
             } else {
@@ -103,34 +129,34 @@ public class FaceLogTools {
     }
 
     public static void V(String tag, String message){
-        write(Level.V, BufferType.MAIN, tag, message, true, false);
+        write(Level.V, BufferType.MAIN, android.os.Process.myPid(),tag, message, true, false);
     }
     public static void D(String tag, String message){
-        write(Level.D, BufferType.MAIN, tag, message, true, false);
+        write(Level.D, BufferType.MAIN,android.os.Process.myPid(), tag, message, true, false);
     }
     public static void E(String tag, String message){
-        write(Level.E, BufferType.MAIN, tag, message, true, false);
+        write(Level.E, BufferType.MAIN,android.os.Process.myPid(), tag, message, true, false);
     }
     public static void I(String tag, String message){
-        write(Level.I, BufferType.MAIN, tag, message, true, false);
+        write(Level.I, BufferType.MAIN,android.os.Process.myPid(), tag, message, true, false);
     }
     public static void F(String tag, String message){
-        write(Level.F, BufferType.MAIN, tag, message, true, false);
+        write(Level.F, BufferType.MAIN,android.os.Process.myPid(), tag, message, true, false);
     }
     public static void V(String tag, String message,boolean showStackTrace){
-        write(Level.V, BufferType.MAIN, tag, message, true, showStackTrace);
+        write(Level.V, BufferType.MAIN,android.os.Process.myPid(), tag, message, true, showStackTrace);
     }
     public static void D(String tag, String message,boolean showStackTrace){
-        write(Level.D, BufferType.MAIN, tag, message, true, showStackTrace);
+        write(Level.D, BufferType.MAIN,android.os.Process.myPid(), tag, message, true, showStackTrace);
     }
     public static void E(String tag, String message,boolean showStackTrace){
-        write(Level.E, BufferType.MAIN, tag, message, true, showStackTrace);
+        write(Level.E, BufferType.MAIN,android.os.Process.myPid(), tag, message, true, showStackTrace);
     }
     public static void I(String tag, String message,boolean showStackTrace){
-        write(Level.I, BufferType.MAIN, tag, message, true, showStackTrace);
+        write(Level.I, BufferType.MAIN,android.os.Process.myPid(), tag, message, true, showStackTrace);
     }
     public static void F(String tag, String message,boolean showStackTrace){
-        write(Level.F, BufferType.MAIN, tag, message, true, showStackTrace);
+        write(Level.F, BufferType.MAIN,android.os.Process.myPid(), tag, message, true, showStackTrace);
     }
 
     private static void printLog(Level type, String tagStr, Object message,StackTraceElement stackTraceElement, boolean showStackTrace) {
@@ -174,7 +200,7 @@ public class FaceLogTools {
         }
     }
 
-    public static void write(Level level,BufferType bufferType,String tag, String message, boolean writeToFile, boolean showStackTrace) {
+    public static void write(Level level,BufferType bufferType,int pid,String tag, String message, boolean writeToFile, boolean showStackTrace) {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
         StackTraceElement callerStack=null;
         if (showStackTrace&&stackTrace.length > 2) {
@@ -188,7 +214,10 @@ public class FaceLogTools {
         executorService.execute(() -> {
             try {
                 StringBuilder logEntryBuilder = new StringBuilder();
-                logEntryBuilder.append ("["+android.os.Process.myPid()+"] ");
+                int nextLineNumber = LineNumberUtil.getNextLineNumber (currentLogFile.getAbsolutePath ());
+                Log.d (TAG, "write: nextLineNumber>>"+nextLineNumber);
+                logEntryBuilder.append ("<"+nextLineNumber+"> ");
+                logEntryBuilder.append ("["+pid+"] ");
                 logEntryBuilder.append ("["+bufferType.name ()+"] ");
                 logEntryBuilder.append ("["+level.name ()+"] ");
                 logEntryBuilder.append ("["+DATE_LOG_FORMAT.format(new Date())+"] ");
@@ -211,7 +240,7 @@ public class FaceLogTools {
                         if (!currentLogFile.getName().contains(today)) {
                             resumeOrCreateLogFile();
                         }
-                        if (currentLogFile.length() >= MAX_FILE_SIZE) {
+                        if (currentLogFile.length() >= getMaxFileSize ()) {
                             createNewLogFile();
                         }
                         // 检查文件是否被删除

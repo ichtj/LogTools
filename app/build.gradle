@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace 'com.face.logtools'
+    namespace ='com.face.logtools'
     compileSdk {
         version = release(36)
     }
@@ -25,8 +25,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
@@ -35,6 +35,7 @@ dependencies {
     implementation libs.material
     implementation libs.activity
     implementation libs.constraintlayout
+//    implementation 'io.github.ichtj:LogTools:1.0'
     implementation project(':logtools')
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
