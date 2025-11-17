@@ -39,7 +39,7 @@ dependencies {
 
 
 mavenPublishing {
-    coordinates("io.github.ichtj", "LogTools", "1.0.4")
+    coordinates("io.github.ichtj", "LogTools", "1.0.5")
 
     pom {
         name = 'LogTools'
