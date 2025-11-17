@@ -204,6 +204,10 @@ public class FaceLogTools {
         LogFilterTools.addKeyword (keyword);
     }
 
+    public static List<String> readKeywords(){
+        return LogFilterTools.readRulesToKeywords ();
+    }
+
     public static void write(Level level,BufferType bufferType,int pid,String tag, String message, boolean writeToFile, boolean showStackTrace) {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
         StackTraceElement callerStack=null;
