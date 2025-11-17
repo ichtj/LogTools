@@ -200,6 +200,10 @@ public class FaceLogTools {
         }
     }
 
+    public static void addKeyword(String keyword){
+        LogFilterTools.addKeyword (keyword);
+    }
+
     public static void write(Level level,BufferType bufferType,int pid,String tag, String message, boolean writeToFile, boolean showStackTrace) {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
         StackTraceElement callerStack=null;
@@ -232,6 +236,7 @@ public class FaceLogTools {
                 }
                 logEntryBuilder.append (message);
 
+                LogFilterTools.writeToFile (nextLineNumber,message);
                 // 写入文件
                 if (writeToFile) {
                     synchronized (FaceLogTools.class) {
@@ -306,7 +311,7 @@ public class FaceLogTools {
     }
 
     // 获取文件名中的索引
-    private static int getFileIndexFromName(String fileName) {
+    static int getFileIndexFromName(String fileName) {
         try {
             String[] parts = fileName.split("_");
             String indexPart = parts[2].replace(LOG_FILE_EXTENSION, "");

@@ -9,10 +9,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class AutoManagerLogTools {
-    private static final String TAG = AutoManagerLogTools.class.getSimpleName();
-    private static long maxFolderSize = 500L * 1024L * 1024L; // 默认 500MB
-    private static int maxFileCount = 10000;                  // 默认 1 万个文件
-    private static double cleanTargetRatio = 0.8;             // 默认清理到 80% 阈值
+
+    private static final String TAG = "AutoManagerLogTools";
+
+    // ======== 配置项（线程安全） ========
+    private static volatile long maxFolderSize = 500L * 1024 * 1024;  // 500MB
+    private static volatile int maxFileCount = 10000;
+    private static volatile double cleanTargetRatio = 0.8;
 
     private static final ExecutorService executor = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r);
@@ -20,111 +23,119 @@ public class AutoManagerLogTools {
         return t;
     });
 
-    /** =============== 可修改参数的方法 =============== */
 
-    private static boolean isValid(long value) {
-        return value > 0;
-    }
-
-    private static boolean isValid(double value) {
-        return value > 0.0 && value < 1.0;
-    }
-
-    /** 设置最大文件夹大小（单位：字节） */
+    // ======== 配置方法 ========
     public static void setMaxFolderSize(long bytes) {
-        if (isValid(bytes)) {
-            maxFolderSize = bytes;
-        }
+        if (bytes > 0) maxFolderSize = bytes;
     }
 
-    /** 设置最大文件数量 */
     public static void setMaxFileCount(int count) {
-        if (isValid(count)) {
-            maxFileCount = count;
-        }
+        if (count > 0) maxFileCount = count;
     }
 
-    /** 设置清理比例（0.0 ~ 1.0），清理到该比例以下 */
     public static void setCleanTargetRatio(double ratio) {
-        if (isValid(ratio)) {
-            cleanTargetRatio = ratio;
-        }
+        if (ratio > 0 && ratio < 1) cleanTargetRatio = ratio;
     }
 
-    /** 打印当前配置参数（可选调试） */
     public static void printCurrentConfig() {
-        Log.d(TAG, "=== FolderCleaner Config ===");
-        Log.d(TAG, "MaxFolderSize: " + maxFolderSize + " bytes");
-        Log.d(TAG, "MaxFileCount : " + maxFileCount);
-        Log.d(TAG, "CleanTarget  : " + (cleanTargetRatio * 100) + "%");
-        Log.d(TAG, "=============================");
+        Log.d(TAG, "=== AutoManagerLogTools Config ===");
+        Log.d(TAG, "MaxFolderSize : " + maxFolderSize);
+        Log.d(TAG, "MaxFileCount  : " + maxFileCount);
+        Log.d(TAG, "CleanTarget   : " + (cleanTargetRatio * 100) + "%");
+        Log.d(TAG, "===================================");
     }
 
-    /** =============== 核心功能部分 =============== */
 
-    /** 异步执行清理任务 */
+    // ======== 异步清理入口 ========
     public static void checkAndCleanAsync(final File folder) {
-        executor.execute(() -> cleanFolderIfNeeded(folder));
+        executor.execute(() -> cleanFolder(folder));
     }
 
-   /** 实际清理逻辑 */
-    private static void cleanFolderIfNeeded(File folder) {
-        if (folder == null || !folder.exists() || !folder.isDirectory()) {
-            return;
-        }
 
-        File[] files = folder.listFiles();
-        if (files == null || files.length == 0) {
-            return;
-        }
+    // ======== 核心清理逻辑（无递归 + 单次排序 + 高性能） ========
+    private static void cleanFolder(File folder) {
+        if (folder == null || !folder.exists() || !folder.isDirectory()) return;
 
-        long totalSize = 0L;
-        for (File f : files) {
-            totalSize += f.length();
-        }
+        List<File> allFiles = new ArrayList<>();
+        Deque<File> stack = new ArrayDeque<>();
+        stack.push(folder);
 
-        if (totalSize > maxFolderSize || files.length > maxFileCount) {
-            // 按修改时间升序（旧文件在前）
-            Arrays.sort(files, new Comparator<File>() {
-                @Override
-                public int compare(File o1, File o2) {
-                    long diff = o1.lastModified() - o2.lastModified();
-                    return diff < 0 ? -1 : (diff > 0 ? 1 : 0);
-                }
-            });
+        long totalSize = 0;
+        int totalCount = 0;
 
-            long targetSize = (long) (maxFolderSize * cleanTargetRatio);
-            long currentSize = totalSize;
+        // --- 使用手动栈遍历所有文件（无递归） ---
+        while (!stack.isEmpty()) {
+            File dir = stack.pop();
+            File[] fs = dir.listFiles();
+            if (fs == null) continue;
 
-            for (File f : files) {
-                if (currentSize <= targetSize) break;
-
-                if (f.isFile()) {
-                    long len = f.length();
-                    if (f.delete()) {
-                        currentSize -= len;
-                    } else {
-                        Log.w(TAG, "Failed to delete file: " + f.getAbsolutePath());
-                    }
+            for (File f : fs) {
+                if (f.isDirectory()) {
+                    stack.push(f);
                 } else {
-                    deleteRecursive(f);
+                    long len = f.length();
+                    totalSize += len;
+                    totalCount++;
+                    allFiles.add(f);
                 }
             }
         }
+
+        if (totalSize <= maxFolderSize && totalCount <= maxFileCount) {
+            return; // 不需要清理
+        }
+
+        // --- 按文件最后修改时间排序（只排序一次） ---
+        allFiles.sort(Comparator.comparingLong(File::lastModified));
+
+        long targetSize = (long) (maxFolderSize * cleanTargetRatio);
+        int targetCount = (int) (maxFileCount * cleanTargetRatio);
+
+        long curSize = totalSize;
+        int curCount = totalCount;
+
+        for (File f : allFiles) {
+            if (curSize <= targetSize && curCount <= targetCount) break;
+
+            long len = f.length();
+            if (f.delete()) {
+                curSize -= len;
+                curCount--;
+            } else {
+                Log.w(TAG, "Delete failed: " + f.getAbsolutePath());
+            }
+        }
+
+        // --- 删除空目录 ---
+        deleteEmptyDirs(folder);
     }
 
-    /** 递归删除子目录 */
-    private static void deleteRecursive(File dir) {
-        if (dir.isDirectory()) {
-            File[] list = dir.listFiles();
-            if (list != null) {
-                for (File child : list) {
-                    deleteRecursive(child);
+
+    // ======== 清理空目录 ========
+    private static void deleteEmptyDirs(File root) {
+        Deque<File> stack = new ArrayDeque<>();
+        stack.push(root);
+
+        while (!stack.isEmpty()) {
+            File dir = stack.pop();
+            File[] fs = dir.listFiles();
+            if (fs == null) continue;
+
+            boolean hasChild = false;
+            for (File f : fs) {
+                if (f.isDirectory()) {
+                    stack.push(f);
+                    hasChild = true;
                 }
             }
-        }
-        if (!dir.delete()) {
-            Log.w(TAG, "Failed to delete directory: " + dir.getAbsolutePath());
+
+            // 目录无子目录 & 无文件 -> 删除
+            fs = dir.listFiles();
+            if (fs != null && fs.length == 0 && !dir.equals(root)) {
+                if (!dir.delete()) {
+                    Log.w(TAG, "Failed delete empty dir: " + dir.getAbsolutePath());
+                }
+            }
         }
     }
 }

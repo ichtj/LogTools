@@ -38,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
             });
             filePickerDialog.show ();
         });
+
+        FaceLogTools.addKeyword ("ichtj");
     }
     int count =0;
     boolean isRunning = false;
@@ -53,7 +55,11 @@ public class MainActivity extends AppCompatActivity {
                         } catch (InterruptedException e) {
                             e.printStackTrace ( );
                         }
-                        FaceLogTools.D(TAG,count+" [测试日志内容] "+count, true);
+                        String content=count+" [测试日志内容] "+count;
+                        if (count%20==0){
+                            content+="ichtj";
+                        }
+                        FaceLogTools.D(TAG,content, true);
                         count++;
                     }
                 }
