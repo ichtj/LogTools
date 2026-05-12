@@ -13,7 +13,7 @@ public class SPUtils {
      */
     public static void putString(String key, String value) {
         SharedPreferences sharedPreferences = FaceLogTools.getmContext().getSharedPreferences(NAME, Context.MODE_PRIVATE);
-        sharedPreferences.edit().putString(key, value).commit();
+        sharedPreferences.edit().putString(key, value).apply();
     }
 
     /**
@@ -37,7 +37,7 @@ public class SPUtils {
      */
     public static void putInt(String key, int value) {
         SharedPreferences sharedPreferences = FaceLogTools.getmContext().getSharedPreferences(NAME, Context.MODE_PRIVATE);
-        sharedPreferences.edit().putInt(key, value).commit();
+        sharedPreferences.edit().putInt(key, value).apply();
     }
 
     /**
@@ -60,7 +60,7 @@ public class SPUtils {
      */
     public static void putLong(String key, long value) {
         SharedPreferences sharedPreferences = FaceLogTools.getmContext().getSharedPreferences(NAME, Context.MODE_PRIVATE);
-        sharedPreferences.edit().putLong(key, value).commit();
+        sharedPreferences.edit().putLong(key, value).apply();
     }
 
 
@@ -85,7 +85,7 @@ public class SPUtils {
      */
     public static void putBoolean(String key, boolean value) {
         SharedPreferences sharedPreferences = FaceLogTools.getmContext().getSharedPreferences(NAME, Context.MODE_PRIVATE);
-        sharedPreferences.edit().putBoolean(key, value).commit();
+        sharedPreferences.edit().putBoolean(key, value).apply();
     }
 
     /**
@@ -107,7 +107,7 @@ public class SPUtils {
      */
     public static void deleShare(String key) {
         SharedPreferences sharedPreferences = FaceLogTools.getmContext().getSharedPreferences(NAME, Context.MODE_PRIVATE);
-        sharedPreferences.edit().remove(key).commit();
+        sharedPreferences.edit().remove(key).apply();
     }
 
     /**
@@ -115,6 +115,6 @@ public class SPUtils {
      */
     public static void deleAll() {
         SharedPreferences sharedPreferences = FaceLogTools.getmContext().getSharedPreferences(NAME, Context.MODE_PRIVATE);
-        sharedPreferences.edit().clear().commit();
+        sharedPreferences.edit().clear().apply();
     }
 }

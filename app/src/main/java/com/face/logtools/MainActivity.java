@@ -1,7 +1,11 @@
 package com.face.logtools;
 
+import android.app.AlarmManager;
+import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -15,6 +19,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG=MainActivity.class.getSimpleName();
+    private int count =0;
+    private boolean isRunning = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate (savedInstanceState);
@@ -38,11 +44,10 @@ public class MainActivity extends AppCompatActivity {
             });
             filePickerDialog.show ();
         });
-
         FaceLogTools.addKeyword ("ichtj");
     }
-    int count =0;
-    boolean isRunning = false;
+
+
     public void writeOnClick(View view){
         if (!isRunning){
             new Thread (  ){
@@ -55,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
                         } catch (InterruptedException e) {
                             e.printStackTrace ( );
                         }
-                        String content=count+" [测试日志内容] "+count;
+                        String content=count+" [测试日志内容测试日志内容测试日志内容测试日志内容测试日志内容测测试日志内容测试日志内容测试日测试日志内容测试日志内容测试日志内容测试日志内容测试日志内容测试日志内容测试日志内容测试日志内容测试日志内容测试日志内容测试日志内容志内容测试日志内容测试日志内容测试日志内容测试日志内容测试日志内容测试日志内容测试日志内容测试日志内容试日志内容测试日志内容测试日志内容测试日志内容测试日志内容测试日志内容] "+count;
                         if (count%20==0){
                             content+="ichtj";
                         }

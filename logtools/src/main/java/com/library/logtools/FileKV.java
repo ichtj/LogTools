@@ -1,13 +1,11 @@
 package com.library.logtools;
 
-import android.util.Log;
-
 import java.io.File;
-import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
 
-public class LineNumberUtil {
-    private static final String TAG=LineNumberUtil.class.getSimpleName();
+public class FileKV {
 
     /**
      * 获取文件下一行行号（取最后一行第一个方括号中的数字）
@@ -37,13 +35,14 @@ public class LineNumberUtil {
         return lastLineNumber;
     }
 
-    // 写入单个值
-    public static void putValue(String fileName,String value) {
-        File file = new File(FaceLogTools.getmContext().getFilesDir(), fileName);
-        java.io.FileOutputStream fos = null;
+    // 写入单个整型值
+    public static void putValue(String fileName, int value) {
+        File file = new File(fileName);
+        FileOutputStream fos = null;
         try {
-            fos = new java.io.FileOutputStream(file, false); // 每次覆盖
-            fos.write(value.getBytes("UTF-8"));
+            fos = new FileOutputStream(file, false); // 每次覆盖
+            String strValue = String.valueOf(value);
+            fos.write(strValue.getBytes("UTF-8"));
             fos.flush();
         } catch (Exception e) {
             e.printStackTrace();
@@ -57,17 +56,18 @@ public class LineNumberUtil {
         }
     }
 
-    // 读取值
-    public static String getValue(String fileName,String defValue) {
-        File file = new File(FaceLogTools.getmContext().getFilesDir(), fileName);
+    // 读取整型值
+    public static int getValue(String fileName, int defValue) {
+        File file = new File(fileName);
         if (!file.exists()) return defValue;
 
-        java.io.FileInputStream fis = null;
+        FileInputStream fis = null;
         try {
-            fis = new java.io.FileInputStream(file);
+            fis = new FileInputStream(file);
             byte[] bytes = new byte[(int) file.length()];
             fis.read(bytes);
-            return new String(bytes, "UTF-8");
+            String strValue = new String(bytes, "UTF-8");
+            return Integer.parseInt(strValue.trim());
         } catch (Exception e) {
             e.printStackTrace();
             return defValue;
@@ -81,4 +81,3 @@ public class LineNumberUtil {
         }
     }
 }
-

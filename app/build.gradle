@@ -36,6 +36,8 @@ dependencies {
     implementation libs.activity
     implementation libs.constraintlayout
 //    implementation 'io.github.ichtj:LogTools:1.0'
+    implementation 'com.github.ichtj:BaseXLink:2.9.0'
+
     implementation project(':logtools')
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
